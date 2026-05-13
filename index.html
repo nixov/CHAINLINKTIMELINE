@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Chainlink — The Chain That Held</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0a0a08;--surface:#111110;--surface2:#191918;--surface3:#222220;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#e8e5d8;--text2:#8a8780;--text3:#4a4845;
+  --green:#1D9E75;--red:#E24B4A;--amber:#EF9F27;--purple:#7B6FE8;--blue:#378ADD;
+  --ff:'Syne',sans-serif;--fm:'DM Mono',monospace;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:var(--fm);font-size:13px;line-height:1.6;min-height:100vh;overflow-x:hidden;}
+
+/* ── HEADER ── */
+header{padding:2.5rem 2.5rem 1.8rem;border-bottom:1px solid var(--border);}
+.hg{display:grid;grid-template-columns:1fr auto;align-items:end;gap:2rem;max-width:1240px;margin:0 auto;}
+.logo-row{display:flex;align-items:center;gap:12px;margin-bottom:1rem;}
+.tag{font-size:11px;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;}
+h1{font-family:var(--ff);font-size:clamp(2rem,4.5vw,3.4rem);font-weight:800;line-height:1.05;letter-spacing:-.03em;}
+h1 em{font-style:normal;color:var(--green);}
+.hsub{margin-top:.6rem;font-size:12.5px;color:var(--text2);max-width:500px;line-height:1.7;}
+.hstats{display:flex;flex-direction:column;gap:.9rem;align-items:flex-end;}
+.snum{font-family:var(--ff);font-size:1.5rem;font-weight:700;line-height:1;}
+.slbl{font-size:10px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-top:2px;}
+.hrule{width:1px;height:55px;background:var(--border2);align-self:center;}
+
+/* ── MAIN ── */
+main{max-width:1240px;margin:0 auto;padding:1.8rem 2.5rem 4rem;}
+
+/* ── YEAR TABS ── */
+.year-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0;}
+.ytab{font-family:var(--fm);font-size:12px;padding:6px 14px;cursor:pointer;border:1px solid transparent;border-bottom:none;border-radius:4px 4px 0 0;background:transparent;color:var(--text3);letter-spacing:.05em;transition:all .15s;position:relative;bottom:-1px;}
+.ytab:hover{color:var(--text2);background:var(--surface2);}
+.ytab.active{background:var(--surface);color:var(--text);border-color:var(--border);border-bottom-color:var(--surface);}
+.ytab.has-crisis{color:var(--red) !important;}
+.ytab.has-crisis.active{color:var(--red);}
+
+/* ── FILTER ROW ── */
+.filter-row{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
+.f-btn{font-family:var(--fm);font-size:11px;padding:3px 10px;cursor:pointer;border-radius:20px;border:1px solid;background:transparent;opacity:.35;transition:opacity .15s;letter-spacing:.04em;}
+.f-btn.active{opacity:1;}
+
+/* ── CANVAS ── */
+.canvas-wrap{position:relative;overflow:hidden;cursor:grab;height:420px;border:1px solid var(--border);border-radius:0 8px 8px 8px;background:var(--surface);}
+.canvas-wrap:active{cursor:grabbing;}
+
+/* ── ZOOM CONTROLS ── */
+.zoom-row{display:flex;align-items:center;gap:6px;margin-bottom:10px;}
+.ctrl-btn{font-family:var(--fm);font-size:11px;padding:4px 10px;cursor:pointer;border:1px solid var(--border2);border-radius:4px;background:var(--surface);color:var(--text2);transition:all .15s;letter-spacing:.04em;}
+.ctrl-btn:hover{background:var(--surface2);color:var(--text);}
+.range-lbl{font-size:11px;color:var(--text3);margin-left:auto;letter-spacing:.05em;}
+
+/* ── DETAIL PANEL ── */
+.detail-panel{margin-top:12px;padding:15px 18px;border:1px solid var(--border);border-radius:8px;background:var(--surface);min-height:90px;display:flex;gap:14px;align-items:flex-start;transition:border-color .2s;}
+.detail-panel.neg{border-color:rgba(226,75,74,.45);}
+.detail-panel.pos{border-color:rgba(29,158,117,.45);}
+.detail-panel.amb{border-color:rgba(239,159,39,.45);}
+.detail-panel.blu{border-color:rgba(55,138,221,.45);}
+.detail-panel.pur{border-color:rgba(123,111,232,.45);}
+.dbadge{flex-shrink:0;margin-top:4px;width:8px;height:8px;border-radius:50%;}
+.dtitle{font-family:var(--ff);font-size:14px;font-weight:600;margin-bottom:4px;}
+.dtext{font-size:12px;color:var(--text2);line-height:1.7;}
+.dvs{font-size:11px;color:var(--text3);margin-top:6px;font-style:italic;line-height:1.6;}
+
+/* ── LEGEND ── */
+.legend{text-align:center;font-size:11px;color:var(--text3);margin-top:8px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
+.legend span{display:flex;align-items:center;gap:5px;}
+.ldot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+
+/* ── FOOTER ── */
+footer{border-top:1px solid var(--border);padding:1.4rem 2.5rem;display:flex;justify-content:space-between;align-items:center;color:var(--text3);font-size:11px;letter-spacing:.06em;flex-wrap:wrap;gap:8px;}
+
+/* scanlines */
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.025) 2px,rgba(0,0,0,.025) 4px);pointer-events:none;z-index:9999;}
+
+@media(max-width:640px){
+  header,main,footer{padding-left:1.2rem;padding-right:1.2rem;}
+  .hg{grid-template-columns:1fr;}
+  .hstats{flex-direction:row;align-items:flex-start;}
+  .hrule{display:none;}
+  .canvas-wrap{height:340px;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hg">
+    <div>
+      <div class="logo-row">
+        <svg width="36" height="36" viewBox="0 0 38 38" fill="none">
+          <polygon points="19,2 34,10.5 34,27.5 19,36 4,27.5 4,10.5" fill="none" stroke="#375BD2" stroke-width="1.5"/>
+          <polygon points="19,8 29,13.5 29,24.5 19,30 9,24.5 9,13.5" fill="#375BD2" opacity="0.15"/>
+          <circle cx="19" cy="19" r="4" fill="#375BD2"/>
+          <line x1="19" y1="8" x2="19" y2="13" stroke="#375BD2" stroke-width="1.5"/>
+          <line x1="29" y1="13.5" x2="24.5" y2="16" stroke="#375BD2" stroke-width="1.5"/>
+          <line x1="29" y1="24.5" x2="24.5" y2="22" stroke="#375BD2" stroke-width="1.5"/>
+          <line x1="19" y1="30" x2="19" y2="25" stroke="#375BD2" stroke-width="1.5"/>
+          <line x1="9" y1="24.5" x2="13.5" y2="22" stroke="#375BD2" stroke-width="1.5"/>
+          <line x1="9" y1="13.5" x2="13.5" y2="16" stroke="#375BD2" stroke-width="1.5"/>
+        </svg>
+        <span class="tag">Chainlink / 2017 — May 13, 2026</span>
+      </div>
+      <h1>The Chain<br>That <em>Held</em></h1>
+      <p class="hsub">Every milestone, crisis, launch and partnership from a $32M ICO to $20 trillion in secured value. Click a year tab to focus, or zoom freely across the full timeline.</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:1.4rem;">
+      <div class="hrule"></div>
+      <div class="hstats">
+        <div><div class="snum" style="color:var(--blue)">$20T+</div><div class="slbl">Value secured</div></div>
+        <div><div class="snum" style="color:var(--green)">2,671+</div><div class="slbl">Integrations</div></div>
+        <div><div class="snum" style="color:var(--purple)">75+</div><div class="slbl">Blockchains</div></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- Year tabs -->
+  <div class="year-tabs" id="year-tabs"></div>
+
+  <!-- Filters + zoom -->
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+    <div class="filter-row">
+      <button class="f-btn active" data-type="milestone"   style="color:#1D9E75;border-color:#1D9E75">Milestones</button>
+      <button class="f-btn active" data-type="crisis"      style="color:#E24B4A;border-color:#E24B4A">Tests / crises</button>
+      <button class="f-btn active" data-type="launch"      style="color:#EF9F27;border-color:#EF9F27">Launches</button>
+      <button class="f-btn active" data-type="partnership" style="color:#7B6FE8;border-color:#7B6FE8">Partnerships</button>
+      <button class="f-btn active" data-type="tve"         style="color:#378ADD;border-color:#378ADD">TVE milestones</button>
+    </div>
+    <div class="zoom-row">
+      <button class="ctrl-btn" id="zoom-in-btn">+ Zoom</button>
+      <button class="ctrl-btn" id="zoom-out-btn">− Zoom</button>
+      <button class="ctrl-btn" id="reset-btn">All years</button>
+      <span class="range-lbl" id="range-lbl">2017 — 2026</span>
+    </div>
+  </div>
+
+  <div class="canvas-wrap" id="canvas-wrap"><canvas id="tl"></canvas></div>
+
+  <div class="detail-panel blu" id="detail-panel">
+    <div class="dbadge" id="dbadge" style="background:var(--blue)"></div>
+    <div>
+      <div class="dtitle" id="dtitle">Click any event to explore</div>
+      <div class="dtext"  id="dtext">Select a year tab to zoom into that period, or scroll on the timeline to zoom freely. Click any dot or triangle to read the full story.</div>
+      <div class="dvs"    id="dvs"></div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><span class="ldot" style="background:#1D9E75"></span>Milestone</span>
+    <span><span class="ldot" style="background:#E24B4A"></span>Crisis / test</span>
+    <span><span class="ldot" style="background:#EF9F27"></span>Launch</span>
+    <span><span class="ldot" style="background:#7B6FE8"></span>Partnership</span>
+    <span><span class="ldot" style="background:#378ADD"></span>TVE milestone ▾</span>
+  </div>
+</main>
+
+<footer>
+  <span>CHAINLINK — THE CHAIN THAT HELD</span>
+  <span>2017 — MAY 13, 2026 · TVE figures approximate</span>
+</footer>
+
+<script>
+/* ══════════════════════════════════════════════
+   DATA
+══════════════════════════════════════════════ */
+const DATA = [
+  // 2017
+  {y:2017,m:6, t:'milestone', label:'Chainlink founded — whitepaper published', short:'Founded',
+   detail:'Sergey Nazarov and Steve Ellis publish the Chainlink whitepaper describing a decentralized oracle network. The core idea: blockchains need a trustless way to access real-world data, and no one had built it yet.',
+   vs:'Hundreds of ICOs launched in 2017 with no clear use-case. Chainlink identified a fundamental infrastructure gap that no competitor had seriously addressed.'},
+  {y:2017,m:9, t:'launch', label:'LINK token ICO — $32M raised, no VC pre-sale', short:'LINK ICO',
+   detail:'The LINK token ICO raises $32M with no VC pre-sale — unusual for 2017. 350M tokens sold publicly at $0.11. Remaining 300M reserved for node operator incentives to bootstrap the network.',
+   vs:'Most 2017 ICOs offered heavy VC discounts before the public sale. Chainlink\'s community-first approach built the grassroots base that kept the project alive through the bear market.'},
+  // 2018
+  {y:2018,m:2, t:'partnership', label:'SWIFT proof-of-concept completed', short:'SWIFT PoC',
+   detail:'Chainlink completes a proof-of-concept with SWIFT — the messaging backbone for 11,000+ financial institutions worldwide — demonstrating that Chainlink oracles can connect legacy banking rails to smart contracts.',
+   vs:'No other oracle project had been invited inside SWIFT\'s infrastructure to demonstrate its technology.'},
+  {y:2018,m:6, t:'crisis', label:'Crypto bear market — LINK drops ~90% from ICO price', short:'Bear market',
+   detail:'LINK falls ~90% from its ICO price as the broader market collapses. Many 2017 projects fold or go dark. Chainlink does neither — the team keeps hiring engineers, shipping integrations, and publishing research through the entire downturn.',
+   vs:'Dozens of 2017 ICO projects abandoned their roadmaps during this period. Chainlink emerged from the bear market with more integrations than it entered with.'},
+  // 2019
+  {y:2019,m:5, t:'launch', label:'Mainnet launches on Ethereum', short:'Mainnet live',
+   detail:'Chainlink launches its oracle network on Ethereum mainnet — the first live decentralized oracle network. Smart contracts can now access real-world data trustlessly for the first time. Synthetix is among the first integrations.',
+   vs:'Centralized data providers existed but offered no on-chain verifiability or manipulation resistance. Chainlink\'s launch gave DeFi the trustless data layer it needed to grow.'},
+  {y:2019,m:9, t:'partnership', label:'Google Cloud — BigQuery data on-chain', short:'Google Cloud',
+   detail:'Google Cloud announces a Chainlink integration allowing BigQuery datasets to be brought on-chain via Chainlink oracles. One of the first major tech-company validations of decentralized oracle infrastructure.',
+   vs:'Competitor oracle projects had no comparable enterprise relationships at this stage.'},
+  {y:2019,m:11,t:'partnership', label:'Synthetix + Aave adopt Chainlink as primary oracle', short:'Synthetix/Aave',
+   detail:'Synthetix and Aave both go live using Chainlink price feeds as their primary data source — cementing Chainlink as the de-facto standard for DeFi. These two protocols managed $500M+ in TVL by end of 2019.',
+   vs:'Without a reliable oracle, DeFi protocols were building their own vulnerable in-house solutions. Chainlink eliminated that risk.'},
+  // 2020
+  {y:2020,m:1, t:'tve', label:'$1 trillion in value secured', short:'$1T TVE',
+   detail:'Chainlink crosses $1 trillion in total transaction value enabled (TVE) — the cumulative USD value of all on-chain transactions that relied on Chainlink oracle data. A landmark just 7 months after mainnet launch.',
+   vs:'No competing oracle network was anywhere near this figure. Most were still on testnet.'},
+  {y:2020,m:3, t:'crisis', label:'Black Thursday — ETH -50% in hours, DeFi stress-tested', short:'Black Thursday',
+   detail:'"Black Thursday" (March 12–13, 2020) crashes ETH by 50% in hours and triggers cascading DeFi liquidations. Chainlink\'s price feeds remain accurate and available throughout the chaos while centralized oracles fail or show stale prices.',
+   vs:'MakerDAO\'s centralized oracle was manipulated during the event, causing $8M in bad debt. Band Protocol data lagged. Chainlink was the only major oracle that held up without interruption — validating its entire design philosophy in a single day.'},
+  {y:2020,m:6, t:'milestone', label:'DeFi Summer — Chainlink secures backbone of $10B TVL', short:'DeFi Summer',
+   detail:'DeFi\'s total value locked explodes from under $1B to over $10B in weeks. Aave, Compound, Synthetix, Yearn, and virtually every major DeFi protocol runs on Chainlink price feeds. Chainlink becomes the invisible backbone of the DeFi ecosystem.',
+   vs:'Band Protocol briefly gained market share but lacked the node operator depth and security track record to service protocols at this scale. Chainlink secured the vast majority of DeFi TVL.'},
+  {y:2020,m:7, t:'tve', label:'$5 trillion in value secured', short:'$5T TVE',
+   detail:'TVE crosses $5 trillion, driven by the DeFi Summer explosion. Chainlink feeds are now securing billions in on-chain loans, synthetic assets, and derivatives daily. $4T growth in just 6 months.',
+   vs:'This growth velocity exceeded anything the oracle competitor landscape could match.'},
+  {y:2020,m:8, t:'milestone', label:'LINK hits $20 — 100x from ICO, market cap $8B', short:'LINK $20',
+   detail:'LINK reaches $20 from $0.17 at ICO — a 100x return. Market cap briefly exceeds $8B. The "LINK marines" community becomes a cultural phenomenon. Mainstream finance media covers Chainlink for the first time as legitimate infrastructure.',
+   vs:'Unlike most altcoin rallies driven purely by speculation, LINK\'s rise tracked real protocol adoption — more integrations, more TVL, more data requests.'},
+  {y:2020,m:9, t:'launch', label:'Chainlink VRF — provably fair on-chain randomness', short:'VRF',
+   detail:'Chainlink VRF (Verifiable Random Function) launches, providing cryptographically provable, tamper-proof randomness on-chain. Immediately adopted by blockchain gaming, NFT projects, and lotteries that need outcomes nobody can manipulate.',
+   vs:'On-chain randomness was previously either predictable, gameable, or dependent on centralized sources. VRF was the first cryptographic solution — no competitor had built anything equivalent.'},
+  {y:2020,m:11,t:'tve', label:'$10 trillion in value secured', short:'$10T TVE',
+   detail:'TVE crosses $10 trillion — a milestone that took traditional financial data providers decades to reach. Chainlink now secures more annual value than the GDP of most countries, across 400+ integrations.',
+   vs:'Chainlink\'s $10T milestone dwarfs the combined TVE of all competing oracle networks at the time.'},
+  // 2021
+  {y:2021,m:4, t:'partnership', label:'SWIFT formal partnership confirmed', short:'SWIFT formal',
+   detail:'A formal SWIFT partnership is confirmed, alongside integrations with additional major financial institutions. This is the moment Chainlink shifts from "crypto infrastructure" to "global financial infrastructure" in institutional perception.',
+   vs:'No other blockchain oracle network had a formal agreement with SWIFT.'},
+  {y:2021,m:6, t:'tve', label:'$15 trillion in value secured', short:'$15T TVE',
+   detail:'TVE surpasses $15 trillion as Chainlink expands from Ethereum to Polygon, BSC, Avalanche, and Fantom. Multi-chain deployment dramatically accelerates TVE growth by bringing Chainlink feeds to every major DeFi ecosystem.',
+   vs:'Multi-chain expansion was Chainlink-led. Competitors scrambled to follow a strategy Chainlink had already executed and was generating revenue from.'},
+  {y:2021,m:9, t:'launch', label:'Chainlink 2.0 whitepaper — off-chain compute vision', short:'LINK 2.0',
+   detail:'The Chainlink 2.0 whitepaper outlines a vastly expanded vision: off-chain computation, hybrid smart contracts, DECO privacy, staking, and super-linear staking security. It becomes one of the most cited documents in blockchain history.',
+   vs:'While competitors were building basic price feeds, Chainlink was architecting generalized off-chain computation infrastructure — a category leap that no competitor had on a roadmap.'},
+  {y:2021,m:10,t:'tve', label:'$20 trillion in value secured', short:'$20T TVE',
+   detail:'TVE crosses $20 trillion. Chainlink now operates 1,000+ oracle networks across 10+ blockchains. Node operators include Deutsche Telekom MMS, Swisscom Blockchain, and T-Systems MMS — institutional-grade infrastructure operators.',
+   vs:'No competitor oracle operates at a fraction of this scale with comparable institutional node operators backing the network.'},
+  {y:2021,m:11,t:'milestone', label:'LINK all-time high — $52.88, market cap $23B', short:'LINK ATH $52',
+   detail:'LINK reaches its all-time high of $52.88 — a 300x return from ICO price. Market cap exceeds $23B. The price reflects genuine protocol dominance at peak bull market, not speculative froth alone.',
+   vs:'LINK\'s ATH came from structural DeFi dominance rather than hype cycles. The token was backed by $20T+ in secured TVE, not promises.'},
+  // 2022
+  {y:2022,m:3, t:'launch', label:'Chainlink Automation (Keepers) — smart contract triggers', short:'Automation',
+   detail:'Chainlink Keepers (now Chainlink Automation) launches, enabling smart contracts to be triggered automatically based on custom conditions — liquidation checks, yield harvesting, scheduled payments. Extends Chainlink from data into execution.',
+   vs:'A new product category at launch. Gelato Network existed but lacked Chainlink\'s security model, node operator network, and institutional trust.'},
+  {y:2022,m:5, t:'crisis', label:'Terra/LUNA collapse — $60B wiped, Chainlink unaffected', short:'LUNA crash',
+   detail:'Terra\'s algorithmic stablecoin collapses, wiping $60B in value across the crypto ecosystem. Chainlink\'s oracles reported the collapsing prices accurately and in real time — performing exactly as designed. Chainlink had no exposure to Terra.',
+   vs:'Band Protocol suffered direct collateral damage from Terra exposure. Pyth Network data lagged during peak volatility. Chainlink\'s architecture protected it entirely from contagion.'},
+  {y:2022,m:9, t:'tve', label:'$7 trillion secured — growing through the bear market', short:'$7T (bear)',
+   detail:'Despite a 70%+ market drawdown, Chainlink maintains $7T+ in annual TVE. TVE is driven by protocol utility, not token price. Active integrations actually increased during the bear market.',
+   vs:'Competitor oracle networks saw integration counts fall as DeFi projects shut down. Chainlink gained integrations, demonstrating infrastructure-level stickiness.'},
+  {y:2022,m:11,t:'crisis', label:'FTX collapses — $32B evaporates overnight', short:'FTX collapse',
+   detail:'FTX, the world\'s second-largest crypto exchange, collapses overnight, vaporizing $32B in customer funds. Chainlink oracle networks continued operating without a single interruption — the most powerful argument for decentralization ever demonstrated in real time.',
+   vs:'Pyth Network, which relied on FTX market makers for its pricing data, faced immediate and acute credibility questions. Chainlink\'s 31+ independent node operators meant no single point of failure existed.'},
+  {y:2022,m:12,t:'launch', label:'CCIP announced — cross-chain interoperability protocol', short:'CCIP',
+   detail:'Cross-Chain Interoperability Protocol (CCIP) is announced — a universal standard for moving messages and tokens trustlessly across any blockchain. Built on Chainlink\'s existing oracle security infrastructure. Positioned as the "TCP/IP of blockchains."',
+   vs:'Wormhole suffered a $325M hack in 2022. LayerZero was growing fast but unproven at scale. CCIP entered the market with years of oracle security track record that neither competitor could match.'},
+  // 2023
+  {y:2023,m:3, t:'partnership', label:'ANZ Bank — live tokenized asset cross-chain settlement', short:'ANZ Bank',
+   detail:'ANZ Bank (Australia\'s 4th largest by assets) deploys Chainlink for live cross-chain tokenized asset settlement — one of the first licensed commercial banks in the world to move real-world assets on-chain via a decentralized oracle in production.',
+   vs:'First major commercial bank to go live (not just pilot) with Chainlink for asset settlement. No competitor oracle was used.'},
+  {y:2023,m:5, t:'tve', label:'$8 trillion secured — recovery begins post-FTX', short:'$8T (2023)',
+   detail:'Annual TVE recovers to $8T as DeFi stabilizes in the post-FTX environment. Chainlink\'s integration count keeps growing even as many DeFi protocols shut down, reflecting genuine infrastructure-level entrenchment.',
+   vs:'Recovery speed outpaced competitor oracle networks, reflecting Chainlink\'s deeper integration into surviving protocols.'},
+  {y:2023,m:7, t:'launch', label:'Staking v0.2 — 45M LINK pool cap hit within hours', short:'Staking v0.2',
+   detail:'Chainlink Staking v0.2 launches. The 45M LINK staking pool cap is reached within hours of opening. Stakers earn rewards for helping secure oracle networks, aligning long-term holders with network security.',
+   vs:'Band Protocol had staking but with far less stake securing far less TVE. Chainlink\'s staking directly secures feeds protecting tens of billions in DeFi TVL.'},
+  {y:2023,m:9, t:'partnership', label:'SWIFT CCIP pilot — 12 banks including BNY Mellon & Citi', short:'SWIFT 12-bank pilot',
+   detail:'SWIFT runs a live CCIP pilot with 12 major financial institutions — including BNY Mellon, Citi, and BNP Paribas — to transfer tokenized assets across chains. The clearest TradFi validation Chainlink had received to this point.',
+   vs:'SWIFT evaluated multiple interoperability solutions and selected Chainlink CCIP. No competitor received a comparable mandate from the global banking messaging system.'},
+  {y:2023,m:11,t:'partnership', label:'Fidelity International — $700B AUM fund NAV data on-chain', short:'Fidelity',
+   detail:'Fidelity International (managing $700B+ AUM) integrates Chainlink to publish fund Net Asset Value data on-chain — enabling DeFi protocols to interact with traditional fund pricing in real time for the first time.',
+   vs:'One of the first major global asset managers to publish live fund data on-chain using a decentralized oracle. The AUM scale involved dwarfs any competitor integration.'},
+  // 2024
+  {y:2024,m:1, t:'tve', label:'$10 trillion secured — TradFi flows now in the mix', short:'$10T (2024)',
+   detail:'TVE crosses $10T in 2024, now reflecting a new mix of sources: DeFi price feed activity, CCIP cross-chain transfers, and the first tokenized TradFi asset flows from partnerships like Fidelity and DTCC pilots.',
+   vs:'The shift toward TradFi-sourced TVE is a structural advantage no competitor can replicate without Chainlink\'s institutional partnerships.'},
+  {y:2024,m:3, t:'launch', label:'CCIP goes generally available across 7+ blockchains', short:'CCIP GA',
+   detail:'CCIP becomes generally available on Ethereum, Arbitrum, Optimism, Avalanche, Polygon, BNB Chain, Base, and more. Enterprise-grade cross-chain messaging is now live and production-ready. Dozens of protocols integrate immediately.',
+   vs:'LayerZero raised $120M+ but was still unproven at institutional scale. Chainlink had a 5-year oracle security track record that enterprise customers required before deploying capital.'},
+  {y:2024,m:5, t:'partnership', label:'J.P. Morgan Kinexys — institutional blockchain payments', short:'J.P. Morgan',
+   detail:'Chainlink partners with J.P. Morgan\'s Kinexys platform (formerly Onyx) to enable institutional-grade cross-chain payments and tokenized asset settlement — connecting the world\'s largest investment bank to on-chain infrastructure.',
+   vs:'J.P. Morgan evaluated the full landscape of blockchain middleware and selected Chainlink. This selection validates it as the institutional standard for connecting traditional finance to blockchain.'},
+  {y:2024,m:6, t:'partnership', label:'DTCC Smart NAV — $2 quadrillion/year cleared annually', short:'DTCC Smart NAV',
+   detail:'DTCC — which clears over $2 quadrillion in US securities per year — announces a Chainlink integration for tokenized fund NAV data via CCIP. The Smart NAV pilot, with JPMorgan, Franklin Templeton, and BNY Mellon, moves into production.',
+   vs:'No other oracle or interoperability protocol has been selected by the world\'s largest securities depository. The scale of underlying assets dwarfs the entire DeFi ecosystem.'},
+  {y:2024,m:7, t:'partnership', label:'Mastercard — 3B+ cardholders can buy crypto on-chain', short:'Mastercard',
+   detail:'Chainlink and Mastercard partner to let over 3 billion cardholders purchase cryptocurrency directly on-chain through Chainlink infrastructure — one of the most significant TradFi-DeFi bridges ever announced.',
+   vs:'No other oracle or cross-chain protocol has been embedded into a payment network with 3 billion users. The scale of potential transaction flow is unprecedented.'},
+  {y:2024,m:8, t:'tve', label:'$15 trillion secured — CCIP now contributing', short:'$15T (2024)',
+   detail:'Annual TVE reaches $15T in 2024 with CCIP now contributing a meaningful share of cross-chain volume alongside traditional oracle feed activity. 2,000+ integrations across 20+ blockchains.',
+   vs:'The gap between Chainlink and the second-largest oracle network by TVE has widened, not narrowed, across the full bear and recovery cycle.'},
+  {y:2024,m:9, t:'launch', label:'Chainlink Runtime Environment (CRE) — orchestration layer', short:'CRE',
+   detail:'Chainlink Runtime Environment (CRE) launches — an off-chain compute and orchestration layer that lets developers and institutions build complex hybrid smart contract applications combining on-chain and off-chain logic securely.',
+   vs:'Off-chain compute with institutional-grade security guarantees is a category Chainlink defines. No competitor has an equivalent infrastructure with comparable trust and track record.'},
+  {y:2024,m:10,t:'partnership', label:'UBS — first G-SIB bank deploys CCIP in production', short:'UBS (G-SIB)',
+   detail:'UBS Asset Management uses Chainlink CCIP to transfer tokenized fund shares across blockchains — the first global systemically important bank (G-SIB) to deploy CCIP in a live production environment for cross-border asset movement.',
+   vs:'No competitor cross-chain protocol has a single G-SIB bank deploying it in production. UBS\'s choice validates CCIP as the institutional standard.'},
+  {y:2024,m:11,t:'launch', label:'Automated Compliance Engine (ACE) — 20+ partners at launch', short:'ACE launches',
+   detail:'Chainlink launches the Automated Compliance Engine (ACE) — a modular system that embeds regulatory compliance logic directly into on-chain transactions. At launch, 20+ compliance providers and regulators are integrated, including GLEIF for verifiable legal entity identity.',
+   vs:'On-chain automated compliance is a new category. Chainlink enters it with institutional partnerships and regulatory backing that no competitor can replicate.'},
+  {y:2024,m:12,t:'partnership', label:'Deutsche Börse — Eurex + Xetra market data goes on-chain', short:'Deutsche Börse',
+   detail:'Deutsche Börse Group partners with Chainlink to bring multi-asset class market data from Eurex (Europe\'s largest derivatives exchange), Xetra, 360T, and Tradegate on-chain via Chainlink DataLink. Real-time European equities and derivatives data now available across blockchains.',
+   vs:'The largest derivatives exchange in Europe selecting Chainlink as its on-chain data provider is a categorical endorsement over all competing oracle networks.'},
+  // 2025
+  {y:2025,m:1, t:'partnership', label:'SBI Group — $200B Japanese conglomerate, exclusive deal', short:'SBI Group',
+   detail:'SBI Group, one of Japan\'s largest financial conglomerates ($200B+ in assets), announces a strategic partnership with Chainlink. SBI Digital Markets adopts Chainlink as its exclusive infrastructure solution for its entire digital assets platform.',
+   vs:'The exclusivity commitment from a $200B conglomerate signals institutional confidence that no regional oracle competitor has received.'},
+  {y:2025,m:2, t:'tve', label:'$16 trillion secured — tokenized RWAs now contributing', short:'$16T TVE',
+   detail:'TVE reaches $16T as tokenized real-world assets — including BlackRock\'s BUIDL fund and other tokenized treasuries — begin generating meaningful TVE alongside traditional DeFi volumes. The composition of what Chainlink secures has fundamentally shifted.',
+   vs:'The addition of tokenized RWA flows as a TVE driver is structurally unique to Chainlink. No competitor has the institutional relationships to secure this category of flow.'},
+  {y:2025,m:3, t:'partnership', label:'S&P Global Ratings — stablecoin assessments published on-chain', short:'S&P Global',
+   detail:'S&P Global Ratings and Chainlink collaborate to bring S&P\'s Stablecoin Stability Assessments on-chain — letting DeFi protocols access independent credit ratings from the world\'s most trusted ratings agency for the first time.',
+   vs:'S&P Global evaluated all oracle options and selected Chainlink as its on-chain delivery partner. No competitor received this mandate.'},
+  {y:2025,m:4, t:'partnership', label:'Nasdaq — real-time equity data feeds live on-chain', short:'Nasdaq',
+   detail:'Nasdaq partners with Chainlink to deliver real-time equity and index data on-chain via Chainlink Data Streams. DeFi protocols can now reference live Nasdaq market data with institutional-grade latency and quality guarantees.',
+   vs:'The first major stock exchange to partner directly with a decentralized oracle for live data feeds. A structural convergence of TradFi and DeFi no competitor could access.'},
+  {y:2025,m:5, t:'launch', label:'CCIP goes live on Solana — unlocks $19B+ of assets', short:'CCIP on Solana',
+   detail:'Chainlink CCIP launches on Solana, connecting the high-throughput Solana ecosystem to the Chainlink cross-chain standard and unlocking access to $19B+ of assets from other chains for Solana DeFi protocols.',
+   vs:'Wormhole and LayerZero had Solana integrations but lacked Chainlink\'s institutional security model. CCIP\'s Solana launch became the preferred route for institutional cross-chain asset movement.'},
+  {y:2025,m:6, t:'launch', label:'Data Streams — sub-second latency feeds go live globally', short:'Data Streams GA',
+   detail:'Chainlink Data Streams becomes generally available, offering sub-second latency price feeds purpose-built for high-frequency DeFi — perpetual DEXs, options protocols, and automated trading systems. Updates delivered off-chain, verified on-chain.',
+   vs:'Pyth Network competes in this space but lacks Chainlink\'s institutional data sourcing relationships and the security track record that enterprise protocols require before deploying capital.'},
+  {y:2025,m:7, t:'partnership', label:'Euroclear — settles €1 quadrillion/year in European securities', short:'Euroclear',
+   detail:'Euroclear, which settles over €1 quadrillion in European securities transactions annually, integrates Chainlink to power on-chain settlement workflows — one of the most significant TradFi infrastructure partnerships in blockchain history.',
+   vs:'Euroclear evaluated the full landscape of blockchain infrastructure providers and chose Chainlink. Its selection cements Chainlink as the standard for European capital markets on-chain infrastructure.'},
+  {y:2025,m:8, t:'partnership', label:'World Liberty Financial — USD1 stablecoin uses CCIP', short:'USD1 stablecoin',
+   detail:'World Liberty Financial\'s USD1 stablecoin — a record-breaking launch — integrates Chainlink CCIP for cross-chain transfers from day one. USD1 can move trustlessly across blockchains secured by Chainlink\'s node operator network.',
+   vs:'CCIP\'s selection for one of 2025\'s most high-profile stablecoin launches reflects its growing dominance as the institutional-preferred cross-chain standard.'},
+  {y:2025,m:9, t:'tve', label:'$20 trillion secured — equals US GDP annually', short:'$20T TVE',
+   detail:'Chainlink surpasses $20T in annual transaction value enabled — equivalent to the nominal GDP of the United States, secured every year. 1,800+ projects across 75+ blockchains. Eight years of zero critical oracle failures.',
+   vs:'The second-largest oracle network by TVE secures less than 5% of Chainlink\'s figure. The lead is structural and has widened across every market cycle.'},
+  {y:2025,m:10,t:'launch', label:'Chainlink SVR — oracle MEV recaptured for LINK stakers', short:'SVR',
+   detail:'Chainlink Smart Value Recapture (SVR) launches, redirecting oracle-related MEV (value previously extracted by bots) back to LINK stakers. SVR rapidly achieves 99% market share of oracle-related MEV. Q1 2026 alone generates $8.3M in recaptured value for the network.',
+   vs:'No competing oracle network has any mechanism to recapture MEV for token holders. SVR is a uniquely Chainlink innovation that creates a sustainable revenue stream from existing oracle activity.'},
+  {y:2025,m:11,t:'partnership', label:'Coinbase DataLink — exchange market data on-chain for first time', short:'Coinbase DataLink',
+   detail:'Coinbase uses Chainlink\'s DataLink service to publish its exchange market data directly on-chain for the first time in its history — making Coinbase\'s deep order book and pricing data available to any application across 75+ blockchains.',
+   vs:'First major centralized exchange to publish live market data on-chain via a decentralized oracle standard. Sets a precedent for exchange-grade data in DeFi.'},
+  // 2026
+  {y:2026,m:1, t:'partnership', label:'Bank of England Synchronisation Lab — Chainlink selected', short:'Bank of England',
+   detail:'The Bank of England selects Chainlink to participate in its Synchronisation Lab — a government-backed program exploring how central bank money can interact with tokenized commercial bank money and digital assets in a synchronized settlement model.',
+   vs:'Selection by one of the world\'s oldest and most systemically important central banks over all blockchain infrastructure alternatives is the highest possible institutional endorsement.'},
+  {y:2026,m:2, t:'partnership', label:'Amundi (€2.3T AUM) — SAFO fund hits $400M in 3 weeks', short:'Amundi SAFO',
+   detail:'Amundi, Europe\'s largest asset manager (€2.3 trillion AUM), and Spiko launch the SAFO tokenized mutual fund powered by Chainlink for NAV reporting and 24/7 cross-chain transfers. SAFO becomes the fastest-growing tokenized fund in history, reaching $400M+ AUM in just three weeks.',
+   vs:'The fastest tokenized fund launch in history runs entirely on Chainlink infrastructure. No competing oracle was used or considered.'},
+  {y:2026,m:2, t:'launch', label:'24/7 RWA Data Streams — forex, gold, silver now always-on', short:'24/7 RWA Streams',
+   detail:'Chainlink launches 24/7 real-world asset Data Streams: round-the-clock forex data powered by NCFX\'s FCA-regulated benchmarks, and 24/7 commodity streams for gold and silver. GMX immediately adopts these for its perpetual markets.',
+   vs:'Sub-second, always-on institutional commodity and forex data on-chain is a category Chainlink invented. No competitor offers equivalent quality with cryptographic verification.'},
+  {y:2026,m:3, t:'launch', label:'24/5 US equity feeds — SPYon, QQQon, TSLAon on Ethereum', short:'US Equity Feeds',
+   detail:'Chainlink launches 24/5 US tokenized equity feeds in partnership with Ondo and Sentora. SPYon, QQQon, and TSLAon price feeds go live on Ethereum. Each feed reflects the full economic reality of the underlying asset including dividends and corporate actions — not just price.',
+   vs:'First institutional-grade equity feeds on-chain with full corporate action coverage. Competing feeds offer price only, missing the dividends and events that define total return.'},
+  {y:2026,m:3, t:'partnership', label:'Canton Network — adopts Chainlink as institutional data standard', short:'Canton Network',
+   detail:'Canton Network — a privacy-enabled blockchain built for institutional finance — adopts Chainlink\'s full data and interoperability suite (Data Streams, SmartData, Proof of Reserve, CCIP) as its standard. Chainlink Labs joins as a Super Validator node.',
+   vs:'Canton\'s selection locks in Chainlink as the canonical infrastructure for institutional tokenization on its network, excluding all alternative oracle providers.'},
+  {y:2026,m:3, t:'partnership', label:'SIX Exchange — €2T+ European equities live on 75+ chains', short:'SIX Exchange',
+   detail:'SIX Group integrates Chainlink, making real-time data for equities listed on its Swiss and Spanish exchanges — equivalent to €2 trillion+ in market capitalization — available across 2,600+ DeFi applications on 75+ blockchains.',
+   vs:'SIX adds a second major European stock exchange to Chainlink\'s TradFi data network, alongside Deutsche Börse, further widening the institutional data moat.'},
+  {y:2026,m:4, t:'crisis', label:'KelpDAO/LayerZero exploit — $3B+ TVL migrates to CCIP', short:'LayerZero exploit',
+   detail:'A major exploit on the KelpDAO bridge — built on LayerZero infrastructure — triggers a "flight to quality" across DeFi. Protocols representing $3B+ in TVL, including KelpDAO itself, migrate to Chainlink CCIP. The exploit validates CCIP\'s 16-independent-node-operator security model.',
+   vs:'LayerZero\'s bridge architecture was successfully exploited. Chainlink CCIP\'s separate Risk Management Network and 16-operator model survived without incident. $3B moved from LayerZero to CCIP as a direct result.'},
+  {y:2026,m:5, t:'partnership', label:'DTCC Collateral AppChain — core Wall Street risk infrastructure', short:'DTCC Collateral AppChain',
+   detail:'DTCC announces its Collateral AppChain — a blockchain-based platform for collateral pricing, valuation, margining, and settlement — will run on Chainlink\'s Runtime Environment (CRE). This extends the Smart NAV pilot into one of Wall Street\'s most critical daily risk management systems. Production launch targeted for Q4 2026.',
+   vs:'DTCC chose Chainlink CRE as the orchestration layer for its collateral platform over all alternatives. This is the most significant TradFi production deployment in Chainlink\'s history — collateral management touches every major financial institution.'},
+  {y:2026,m:5, t:'launch', label:'Bermuda Monetary Authority — real-time regulatory compliance on-chain', short:'BMA Embedded Supervision',
+   detail:'Chainlink, Apex Group, Bluprynt, and Hacken complete the Embedded Supervision Solution with Bermuda\'s financial regulator (BMA). Chainlink\'s Automated Compliance Engine (ACE) enforces regulatory rules automatically at the moment each transaction executes — not after the fact. This means: a stablecoin\'s reserves are verified on-chain in real time via Proof of Reserve, new tokens cannot be minted beyond what is backed (Secure Mint), and compliance rules travel with assets across chains via CCIP. Moving from manual, post-hoc compliance reviews to automated enforcement built directly into financial infrastructure.',
+   vs:'This is the first time a national financial regulator has embedded Chainlink\'s compliance engine directly into its supervisory framework. No competing blockchain infrastructure company has achieved regulatory-level integration at this depth.'},
+];
+
+/* ══════════════════════════════════════════════
+   CONSTANTS
+══════════════════════════════════════════════ */
+const TC = {milestone:'#1D9E75',crisis:'#E24B4A',launch:'#EF9F27',partnership:'#7B6FE8',tve:'#378ADD'};
+const PC = {milestone:'pos',crisis:'neg',launch:'amb',partnership:'pur',tve:'blu'};
+const YEARS = [2017,2018,2019,2020,2021,2022,2023,2024,2025,2026];
+
+/* year ranges: give a half-year padding on each side */
+const YR = {};
+YEARS.forEach(y=>{
+  if(y===2026){ YR[y]=[2025.92, 2026.55]; }
+  else { YR[y]=[y-0.08, y+0.92]; }
+});
+YR['all'] = [2016.95, 2026.6];
+
+/* ══════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════ */
+const canvas=document.getElementById('tl');
+const ctx=canvas.getContext('2d');
+const wrap=document.getElementById('canvas-wrap');
+let W=0,H=420;
+let viewStart=2016.95, viewEnd=2026.6;
+let activeTypes=new Set(['milestone','crisis','launch','partnership','tve']);
+let hoveredIdx=-1;
+let activeYear='all';
+
+/* ══════════════════════════════════════════════
+   BUILD YEAR TABS
+══════════════════════════════════════════════ */
+const tabContainer=document.getElementById('year-tabs');
+function buildTabs(){
+  tabContainer.innerHTML='';
+  // "All" tab
+  const all=document.createElement('button');
+  all.className='ytab'+(activeYear==='all'?' active':'');
+  all.textContent='All years';
+  all.dataset.year='all';
+  all.onclick=()=>setYear('all');
+  tabContainer.appendChild(all);
+  // Year tabs
+  YEARS.forEach(y=>{
+    const hasCrisis=DATA.some(d=>d.y===y&&d.t==='crisis');
+    const btn=document.createElement('button');
+    btn.className='ytab'+(hasCrisis?' has-crisis':'')+(activeYear===y?' active':'');
+    btn.textContent=y;
+    btn.dataset.year=y;
+    btn.onclick=()=>setYear(y);
+    tabContainer.appendChild(btn);
+  });
+}
+
+function setYear(y){
+  activeYear=y;
+  const range=YR[y==='all'?'all':y];
+  viewStart=range[0]; viewEnd=range[1];
+  buildTabs(); draw();
+}
+
+/* ══════════════════════════════════════════════
+   RESIZE
+══════════════════════════════════════════════ */
+function resize(){
+  W=wrap.clientWidth;
+  canvas.width=W*devicePixelRatio; canvas.height=H*devicePixelRatio;
+  canvas.style.width=W+'px'; canvas.style.height=H+'px';
+  ctx.scale(devicePixelRatio,devicePixelRatio);
+  draw();
+}
+
+/* ══════════════════════════════════════════════
+   DRAW
+══════════════════════════════════════════════ */
+function dtf(y,m){return y+(m-1)/12;}
+function fx(f){return((f-viewStart)/(viewEnd-viewStart))*W;}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  const axisY=210, span=viewEnd-viewStart;
+
+  // crisis glow bands
+  DATA.filter(d=>d.t==='crisis').forEach(d=>{
+    const x=fx(dtf(d.y,d.m)), bw=Math.max(24,W*0.055);
+    const g=ctx.createLinearGradient(x-bw,0,x+bw,0);
+    g.addColorStop(0,'rgba(226,75,74,0)');
+    g.addColorStop(.5,'rgba(226,75,74,0.08)');
+    g.addColorStop(1,'rgba(226,75,74,0)');
+    ctx.fillStyle=g; ctx.fillRect(x-bw,40,bw*2,H-60);
+  });
+
+  // year grid lines + labels
+  for(let y=Math.ceil(viewStart);y<=Math.floor(viewEnd);y++){
+    const x=fx(y);
+    if(x<0||x>W) continue;
+    ctx.strokeStyle='rgba(255,255,255,0.05)';
+    ctx.lineWidth=.5; ctx.setLineDash([3,4]);
+    ctx.beginPath(); ctx.moveTo(x,40); ctx.lineTo(x,H-26); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='#4a4845'; ctx.font='11px "DM Mono",monospace'; ctx.textAlign='center';
+    ctx.fillText(y,x,H-10);
+  }
+
+  // axis line
+  ctx.strokeStyle='rgba(255,255,255,0.09)'; ctx.lineWidth=1; ctx.setLineDash([]);
+  ctx.beginPath(); ctx.moveTo(0,axisY); ctx.lineTo(W,axisY); ctx.stroke();
+
+  // filter visible data
+  const visible=DATA.filter(d=>activeTypes.has(d.t));
+
+  /* lane assignment per column-bucket to prevent overlap */
+  const BUCKET=0.04; // fraction of view-span
+  const laneMap={};
+  visible.forEach((d,vi)=>{
+    const f=dtf(d.y,d.m);
+    const bk=Math.round(f/BUCKET);
+    if(!laneMap[bk]) laneMap[bk]=[];
+    laneMap[bk].push(vi);
+  });
+
+  visible.forEach((d,vi)=>{
+    const gi=DATA.indexOf(d);
+    const x=fx(dtf(d.y,d.m));
+    if(x<-100||x>W+100) return;
+
+    const isHov=hoveredIdx===gi;
+    const color=TC[d.t];
+    const isTVE=d.t==='tve';
+
+    /* determine lane: alternate above/below per event index */
+    const above=isTVE?false:(vi%2===0);
+    const labelY=isTVE?300:(above?62:348);
+    const dotY=isTVE?axisY+16:axisY;
+
+    // connector
+    ctx.strokeStyle=color; ctx.lineWidth=.7; ctx.globalAlpha=.3; ctx.setLineDash([3,3]);
+    ctx.beginPath();
+    ctx.moveTo(x, dotY+(above?-10:10));
+    ctx.lineTo(x, labelY+(above?16:-6));
+    ctx.stroke();
+    ctx.setLineDash([]); ctx.globalAlpha=1;
+
+    // shape
+    if(isTVE){
+      ctx.beginPath(); ctx.moveTo(x-7,axisY+1); ctx.lineTo(x+7,axisY+1); ctx.lineTo(x,axisY+16); ctx.closePath();
+      ctx.fillStyle=color; ctx.globalAlpha=isHov?1:.8; ctx.fill();
+      if(isHov){ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.globalAlpha=.35;ctx.stroke();}
+      ctx.globalAlpha=1;
+    } else {
+      const r=isHov?9:7;
+      ctx.beginPath(); ctx.arc(x,dotY,r,0,Math.PI*2);
+      ctx.fillStyle=color; ctx.globalAlpha=isHov?1:.8; ctx.fill(); ctx.globalAlpha=1;
+      if(isHov){
+        ctx.beginPath(); ctx.arc(x,dotY,14,0,Math.PI*2);
+        ctx.strokeStyle=color; ctx.lineWidth=1; ctx.globalAlpha=.25; ctx.stroke(); ctx.globalAlpha=1;
+      }
+    }
+
+    // label
+    const lbl=d.short;
+    ctx.font=`${isHov?500:400} 11px "DM Mono",monospace`;
+    const tw=ctx.measureText(lbl).width;
+    // always show labels when zoomed to year, fade when full view
+    const alpha=span<=1.2?1:span<=3?.9:.42;
+
+    if(isHov||span<=3){
+      ctx.globalAlpha=Math.min(alpha+.2,.96);
+      ctx.fillStyle='#111110';
+      ctx.fillRect(x-tw/2-5,labelY-2,tw+10,16);
+    }
+    ctx.globalAlpha=isHov?1:alpha;
+    ctx.fillStyle=isHov?color:'#8a8780';
+    ctx.textAlign='center';
+    ctx.fillText(lbl,x,labelY+12);
+    ctx.globalAlpha=1;
+  });
+
+  // update range label
+  const s=viewStart,e=viewEnd;
+  let lbl='';
+  if(activeYear!=='all'){
+    const cnt=DATA.filter(d=>d.y===activeYear&&activeTypes.has(d.t)).length;
+    lbl=`${activeYear} · ${cnt} event${cnt!==1?'s':''}`;
+  } else {
+    lbl=`${Math.floor(s)} — ${Math.ceil(e)}`;
+  }
+  document.getElementById('range-lbl').textContent=lbl;
+}
+
+/* ══════════════════════════════════════════════
+   HIT TEST
+══════════════════════════════════════════════ */
+function hitTest(mx){
+  const vis=DATA.filter(d=>activeTypes.has(d.t));
+  for(const d of vis){
+    const x=fx(dtf(d.y,d.m));
+    if(Math.abs(mx-x)<20) return DATA.indexOf(d);
+  }
+  return -1;
+}
+
+/* ══════════════════════════════════════════════
+   CANVAS EVENTS
+══════════════════════════════════════════════ */
+canvas.addEventListener('mousemove',e=>{
+  const mx=e.clientX-canvas.getBoundingClientRect().left;
+  const prev=hoveredIdx; hoveredIdx=hitTest(mx);
+  canvas.style.cursor=hoveredIdx>=0?'pointer':'grab';
+  if(hoveredIdx!==prev) draw();
+});
+canvas.addEventListener('mouseleave',()=>{hoveredIdx=-1;canvas.style.cursor='grab';draw();});
+
+canvas.addEventListener('click',e=>{
+  const idx=hitTest(e.clientX-canvas.getBoundingClientRect().left);
+  if(idx<0) return;
+  const d=DATA[idx];
+  const pan=document.getElementById('detail-panel');
+  pan.className='detail-panel '+PC[d.t];
+  document.getElementById('dbadge').style.background=TC[d.t];
+  document.getElementById('dtitle').textContent=d.label+' ('+d.y+')';
+  document.getElementById('dtext').textContent=d.detail;
+  document.getElementById('dvs').textContent=d.vs?'⚡ vs competitors: '+d.vs:'';
+});
+
+/* ══════════════════════════════════════════════
+   FILTER BUTTONS
+══════════════════════════════════════════════ */
+document.querySelectorAll('.f-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const t=btn.dataset.type;
+    if(activeTypes.has(t)){activeTypes.delete(t);btn.classList.remove('active');}
+    else{activeTypes.add(t);btn.classList.add('active');}
+    hoveredIdx=-1; draw();
+  });
+});
+
+/* ══════════════════════════════════════════════
+   ZOOM / PAN
+══════════════════════════════════════════════ */
+function zoom(factor,cf){
+  const span=viewEnd-viewStart, ns=Math.min(Math.max(span/factor,.35),10);
+  const c=cf!==undefined?cf:(viewStart+viewEnd)/2;
+  viewStart=c-ns*(c-viewStart)/span; viewEnd=viewStart+ns;
+  activeYear='all'; clamp(); buildTabs(); draw();
+}
+function clamp(){
+  const s=viewEnd-viewStart;
+  if(viewStart<2016.8){viewStart=2016.8;viewEnd=viewStart+s;}
+  if(viewEnd>2026.65){viewEnd=2026.65;viewStart=viewEnd-s;}
+}
+
+document.getElementById('zoom-in-btn').onclick=()=>zoom(1.7);
+document.getElementById('zoom-out-btn').onclick=()=>zoom(0.6);
+document.getElementById('reset-btn').onclick=()=>setYear('all');
+
+canvas.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const rect=canvas.getBoundingClientRect();
+  const cf=viewStart+((e.clientX-rect.left)/W)*(viewEnd-viewStart);
+  zoom(e.deltaY<0?1.3:.77,cf);
+},{passive:false});
+
+let ps=null,pvs,pve;
+canvas.addEventListener('mousedown',e=>{ps=e.clientX;pvs=viewStart;pve=viewEnd;});
+window.addEventListener('mousemove',e=>{
+  if(ps===null) return;
+  const shift=-((e.clientX-ps)/W)*(pve-pvs);
+  viewStart=pvs+shift; viewEnd=pve+shift; clamp();
+  activeYear='all'; buildTabs(); draw();
+});
+window.addEventListener('mouseup',()=>{ps=null;});
+
+let tx=null,tvs,tve2;
+canvas.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;tvs=viewStart;tve2=viewEnd;},{passive:true});
+canvas.addEventListener('touchmove',e=>{
+  if(tx===null) return;
+  const shift=-((e.touches[0].clientX-tx)/W)*(tve2-tvs);
+  viewStart=tvs+shift; viewEnd=tve2+shift; clamp(); draw();
+},{passive:true});
+canvas.addEventListener('touchend',()=>{tx=null;});
+
+/* ══════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════ */
+buildTabs();
+new ResizeObserver(resize).observe(wrap);
+resize();
+</script>
+</body>
+</html>
